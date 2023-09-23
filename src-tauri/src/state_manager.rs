@@ -1,8 +1,9 @@
 use std::{collections::HashMap, sync::Mutex};
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Monitor {
+    pub uuid: Uuid,
     pub thing: String,
     pub sub_topic: String,
     pub pub_topic: String,
@@ -10,8 +11,15 @@ pub struct Monitor {
 }
 
 impl Monitor {
-    pub fn new(thing: String, payload: String, sub_topic: String, pub_topic: String) -> Self {
+    pub fn new(
+        uuid: String,
+        thing: String,
+        payload: String,
+        sub_topic: String,
+        pub_topic: String,
+    ) -> Self {
         Self {
+            uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
             thing,
             payload,
             sub_topic,

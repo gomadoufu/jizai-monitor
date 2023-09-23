@@ -14,10 +14,11 @@ use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitMessage {
+    pub uuid: String,
+    pub thing: String,
     pub ca: String,
     pub cert: String,
     pub key: String,
-    pub thing: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,10 +32,11 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
     // idはフロントで生成して持ってきた方がいいね
 
     let SubmitMessage {
+        uuid,
+        thing,
         ca,
         cert,
         key,
-        thing,
     } = message;
 
     let cert_paths = vec![ca, cert, key];
@@ -48,6 +50,7 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
     let publish_payload = "{\"mode\": \"machine\"}".to_string();
 
     let mut monitor = Monitor::new(
+        uuid,
         thing.clone(),
         "".to_string(),
         subscribe_topic.clone(),
@@ -73,7 +76,7 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
     });
 
     // 2秒まってMQTTが帰ってこなければ、問題があったとみなす
-    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     received_handle.abort();
 
     match received_handle.await {
@@ -82,6 +85,7 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
 
             monitor.payload = received_data.sensors.clone();
 
+            println!("monitor = {:#?}", monitor);
             appstate.add_monitor(monitor);
 
             Ok(received_data.sensors)

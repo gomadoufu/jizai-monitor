@@ -4,6 +4,7 @@ import { message } from '@tauri-apps/api/dialog';
 import './App.css';
 import CertLoadButton from './components/CertLoadButton';
 import ThingNameForm from './components/ThingNameForm';
+import { v4 as uuidv4 } from 'uuid';
 
 type FilePath = string;
 
@@ -34,7 +35,7 @@ function App() {
     },
   ];
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!ca || !cert || !key) {
       message('ファイルを選択してください', { title: 'Error', type: 'error' });
@@ -44,19 +45,30 @@ function App() {
       message('監視するEdgeの識別番号を入力してください', { title: 'Error', type: 'error' });
       return;
     }
-    await invoke('submit', { message: { ca: ca, cert: cert, key: key, thing: thingName } }).then(
-      (res) => {
+    invokeSubmit(thingName, ca, cert, key);
+  }
+
+  async function invokeSubmit(thing: string, ca: string, cert: string, key: string) {
+    const uniqueId = uuidv4();
+    await invoke('submit', {
+      message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
+    })
+      .then((res) => {
         console.log(res);
-      }
-    );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   return (
     <div className="container">
       <h1>🌕 Jizai - Monitor 🦉</h1>
-      <a href="https://jizaipad.net/" rel="jizaipad viewer" target="_blank">
-        Viewerを開く
-      </a>
+      <div className="anchor-container">
+        <a href="https://jizaipad.net/" rel="jizaipad viewer" target="_blank">
+          Viewerを開く
+        </a>
+      </div>
       <p>TLS証明書を選択してください。AWS IoT Coreで発行できます。</p>
       <p>また、右クリックからリロードできます。</p>
 
