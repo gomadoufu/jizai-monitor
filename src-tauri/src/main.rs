@@ -57,9 +57,6 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
         publish_topic.clone(),
     );
 
-    println!("subscribe_topic = {:?}", subscribe_topic);
-    println!("publish_topic = {:?}", publish_topic);
-
     task::spawn(async move {
         mqtt::client::subscribe(&client, &subscribe_topic)
             .await
@@ -81,19 +78,13 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
 
     match received_handle.await {
         Ok(received_data) => {
-            println!("received_data = {:?}", received_data);
-
             monitor.payload = received_data.sensors.clone();
 
-            println!("monitor = {:#?}", monitor);
             appstate.add_monitor(monitor);
 
             Ok(received_data.sensors)
         }
-        Err(e) => {
-            println!("Error = {:?}", e);
-            Err(())
-        }
+        Err(_) => Err(()),
     }
 }
 
