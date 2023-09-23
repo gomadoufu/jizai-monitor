@@ -8,7 +8,6 @@ pub fn read_certificates(
     state: &State<GlobalState>,
     paths: &Vec<String>,
 ) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
-    println!("Reading certificates...");
     let mut contents = vec![];
     let cache = state.get_file_cache();
     for path in paths {

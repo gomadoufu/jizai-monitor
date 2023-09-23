@@ -66,8 +66,6 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
             .expect("publish error");
     });
 
-    println!("Waiting for eventloop to poll event...");
-
     let received_handle = tokio::spawn(async {
         mqtt::client::poll_event(eventloop)
             .await
@@ -80,8 +78,6 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
 
     match received_handle.await {
         Ok(received_data) => {
-            println!("received_data = {:?}", received_data);
-
             println!("received_data = {:?}", received_data);
 
             monitor.payload = received_data.sensors.clone();

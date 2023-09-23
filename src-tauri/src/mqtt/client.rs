@@ -46,11 +46,9 @@ pub async fn poll_event(mut eventloop: EventLoop) -> Result<ReceivedData, Box<dy
             let received_data = parse_whole(packet.payload.as_ref());
             match received_data {
                 Ok(received_data) => {
-                    println!("received_data = {:?}", received_data);
                     return Ok(received_data);
                 }
                 Err(e) => {
-                    println!("Error = {:?}", e);
                     return Err(e.into());
                 }
             }
