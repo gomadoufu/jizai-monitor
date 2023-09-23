@@ -44,14 +44,19 @@
   /* text-align: center; */
 }
 
+.anchor-container {
+  /* aタグの範囲がflexboxの範囲に拡張されてしまうのを回避 */
+  align-items: flex-start;
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #3bb4ff;
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: #424aee;
 }
 
 h1 {
@@ -94,10 +99,10 @@ button {
 }
 
 button:hover {
-  border-color: #396cd8;
+  border-color: #7339d8;
 }
 button:active {
-  border-color: #396cd8;
+  border-color: #7339d8;
   background-color: #e8e8e8;
 }
 
@@ -112,16 +117,16 @@ button {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #f2f7a1;
-    background-color: #713abe;
+    color: #d2d687;
+    background-color: #3d2065;
   }
 
   .form-container {
-    background-color: #e5cff7;
+    background-color: #a191ad;
   }
 
   a {
-    color: #24c8db;
+    color: #1da6b5;
   }
 
   a:hover {
@@ -130,16 +135,26 @@ button {
 
   input,
   button {
-    color: #ffffff;
-    background-color: #9d76c1;
+    color: #e8e8e8;
+    background-color: #7f5f9c;
   }
+
+  button:hover {
+    border-color: #ffdd77;
+  }
+
   button:active {
+    border-color: #ffdd77;
     background-color: #0f0f0f;
   }
 
   #thingName {
     color: #0f0f0f;
-    background-color: #f1f0e8;
+    background-color: #a4a49e;
+  }
+
+  ::placeholder {
+    color: #d5d5d5;
   }
 
   #submit {
