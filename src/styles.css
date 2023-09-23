@@ -16,7 +16,7 @@
 
 .container {
   margin: 0 auto;
-  padding-top: 10vh;
+  padding-top: 3vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,7 +71,7 @@ button {
   background-color: #ecf2ff;
   transition: border-color 0.25s;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  width: 50vh;
+  width: 50vw;
 }
 
 .over-text {

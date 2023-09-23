@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { open, message } from '@tauri-apps/api/dialog';
 import './App.css';
+import { invoke } from '@tauri-apps/api';
 
 function App() {
   const [ca, setCa] = useState<FilePath>('');
@@ -38,7 +39,7 @@ function App() {
     },
   ];
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!ca || !cert || !key) {
       message('ファイルを選択してください', { title: 'Error', type: 'error' });
@@ -49,6 +50,11 @@ function App() {
       return;
     }
     console.log(`submit ${ca}, ${cert}, ${key}, ${thingName}`);
+    await invoke('submit', { message: { ca: ca, cert: cert, key: key, thing: thingName } }).then(
+      (res) => {
+        console.log(res);
+      }
+    );
   }
 
   async function openDialog(ext: string, setPath: React.Dispatch<React.SetStateAction<string>>) {
