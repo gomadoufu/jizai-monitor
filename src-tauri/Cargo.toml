@@ -24,6 +24,7 @@ rumqttc = { version = "0.22.0", features = ["use-rustls"] }
 rustls = "0.21"
 tokio = { version = "1", features = ["full", "macros"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng", "macro-diagnostics"] }
+anyhow = "1.0.75"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

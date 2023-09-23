@@ -10,6 +10,8 @@ use state_manager::{GlobalState, Monitor};
 use tauri::State;
 use tokio::task;
 
+use anyhow::Result;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitMessage {
     pub ca: String,
@@ -35,11 +37,6 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
         thing,
     } = message;
 
-    println!("ca = {:?}", ca);
-    println!("cert = {:?}", cert);
-    println!("key = {:?}", key);
-    println!("thing = {:?}", thing);
-
     let cert_paths = vec![ca, cert, key];
 
     let cert_contents = file_reader::read_certificates(&appstate, &cert_paths).unwrap();
@@ -63,22 +60,41 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
     task::spawn(async move {
         mqtt::client::subscribe(&client, &subscribe_topic)
             .await
-            .unwrap();
+            .expect("subscribe error");
         mqtt::client::publish(&client, &publish_topic, &publish_payload)
             .await
-            .unwrap();
+            .expect("publish error");
     });
 
     println!("Waiting for eventloop to poll event...");
 
-    let received_data = mqtt::client::poll_event(eventloop).await.unwrap();
-    println!("received_data = {:?}", received_data);
+    let received_handle = tokio::spawn(async {
+        mqtt::client::poll_event(eventloop)
+            .await
+            .expect("poll error")
+    });
 
-    monitor.payload = received_data.sensors.clone();
+    // 2秒まってMQTTが帰ってこなければ、問題があったとみなす
+    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+    received_handle.abort();
 
-    appstate.add_monitor(monitor);
+    match received_handle.await {
+        Ok(received_data) => {
+            println!("received_data = {:?}", received_data);
 
-    Ok(received_data.sensors)
+            println!("received_data = {:?}", received_data);
+
+            monitor.payload = received_data.sensors.clone();
+
+            appstate.add_monitor(monitor);
+
+            Ok(received_data.sensors)
+        }
+        Err(e) => {
+            println!("Error = {:?}", e);
+            Err(())
+        }
+    }
 }
 
 #[tokio::main]
