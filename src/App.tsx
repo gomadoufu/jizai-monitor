@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import { open, message } from '@tauri-apps/api/dialog';
-import './App.css';
+import React, { ComponentProps, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
+import { message } from '@tauri-apps/api/dialog';
+import './App.css';
+import CertLoadButton from './components/CertLoadButton';
+import ThingNameForm from './components/ThingNameForm';
+
+type FilePath = string;
 
 function App() {
   const [ca, setCa] = useState<FilePath>('');
@@ -9,16 +13,7 @@ function App() {
   const [key, setKey] = useState<FilePath>('');
   const [thingName, setThingName] = useState<string>('');
 
-  type FilePath = string;
-
-  type Certificate = {
-    name: string;
-    path: FilePath;
-    setPath: React.Dispatch<React.SetStateAction<FilePath>>;
-    extension: string;
-  };
-
-  const certificates: Certificate[] = [
+  const certificates: ComponentProps<typeof CertLoadButton>[] = [
     {
       name: 'CA証明書',
       path: ca,
@@ -49,7 +44,6 @@ function App() {
       message('監視するEdgeの識別番号を入力してください', { title: 'Error', type: 'error' });
       return;
     }
-    console.log(`submit ${ca}, ${cert}, ${key}, ${thingName}`);
     await invoke('submit', { message: { ca: ca, cert: cert, key: key, thing: thingName } }).then(
       (res) => {
         console.log(res);
@@ -57,67 +51,28 @@ function App() {
     );
   }
 
-  async function openDialog(ext: string, setPath: React.Dispatch<React.SetStateAction<string>>) {
-    const selected = await open({
-      multiple: false,
-      filters: [{ name: 'TLS certificates', extensions: [ext] }],
-    });
-    if (selected === null) {
-      await message('ファイルを選択してください', { title: 'Error', type: 'error' });
-    }
-    if (typeof selected === 'string') {
-      console.log(`Selected file path: ${selected}`);
-      setPath(selected);
-    }
-  }
-
-  // REFACTOR: コンポーネントに分割する
   return (
     <div className="container">
       <h1>🌕 Jizai - Monitor 🦉</h1>
-
       <a href="https://jizaipad.net/" rel="jizaipad viewer" target="_blank">
         Viewerを開く
       </a>
-
       <p>TLS証明書を選択してください。AWS IoT Coreで発行できます。</p>
       <p>また、右クリックからリロードできます。</p>
 
       <div className="form-container">
         <form className="form-item-col">
-          {/* 証明書の選択 */}
           {certificates.map((certificate) => (
-            <button
-              key={certificate.name}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                openDialog(certificate.extension, certificate.setPath).catch((error) => {
-                  console.error("Couldn't open dialog", error);
-                  //TODO: Rustにエラーを渡す
-                });
-              }}
-            >
-              <div className="over-text">
-                {certificate.path ? certificate.path : `${certificate.name}ファイルを選択`}
-              </div>
-            </button>
+            <CertLoadButton key={certificate.name} {...certificate} />
           ))}
         </form>
-        <form className="form-item-col" onSubmit={handleSubmit}>
-          {/* miniPCの番号入力と送信 */}
-          <input
-            id="thingName"
-            type="text"
-            name="thingName"
-            placeholder="thing name"
-            autoComplete="off"
-            onChange={(e) => setThingName(e.target.value)}
-          />
-          <button id="submit" type="submit">
-            監視する
-          </button>
-        </form>
+
+        <ThingNameForm
+          onSubmit={handleSubmit}
+          onThingNameChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setThingName(e.target.value)
+          }
+        />
       </div>
     </div>
   );
