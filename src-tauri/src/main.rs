@@ -29,8 +29,6 @@ pub struct ResponseMessage {
 
 #[tauri::command]
 async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Result<String, ()> {
-    // idはフロントで生成して持ってきた方がいいね
-
     let SubmitMessage {
         uuid,
         thing,
@@ -72,7 +70,7 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
             .expect("poll error")
     });
 
-    // 2秒まってMQTTが帰ってこなければ、問題があったとみなす
+    // 1秒まってMQTTが帰ってこなければ、問題があったとみなす
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     received_handle.abort();
 

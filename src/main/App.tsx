@@ -1,7 +1,6 @@
 import React, { ComponentProps, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
 import { message } from '@tauri-apps/api/dialog';
-import './App.css';
 import CertLoadButton from '../components/CertLoadButton';
 import ThingNameForm from '../components/ThingNameForm';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,20 +47,29 @@ function App() {
     }
     const uniqueId = uuidv4();
     const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
-    webview.once('tauri://created', () => {
+    webview.once('tauri://created', async () => {
       console.log('webview created');
+      try {
+        let response = await invoke('submit', {
+          message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
+        });
+        if (typeof response !== 'string') {
+          message('エラーが発生しました', { title: 'Error', type: 'error' });
+          return;
+        }
+        console.log(response);
+        await webview.emit('monitor/sensor', response);
+        console.log('emitted sensor data');
+      } catch (error) {
+        console.error(error);
+        message('エラーが発生しました', { title: 'Error', type: 'error' });
+        return;
+      }
     });
     webview.once('tauri://error', () => {
-      console.log('webview error');
+      message('エラーが発生しました', { title: 'Error', type: 'error' });
+      return;
     });
-    try {
-      invoke('submit', {
-        message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
-      });
-      console.log('invoke submit');
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   return (

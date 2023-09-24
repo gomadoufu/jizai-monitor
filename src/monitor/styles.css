@@ -1,0 +1,163 @@
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+
+  color: #0f0f0f;
+  background-color: #e3dffd;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+.container {
+  margin: 0 auto;
+  padding-top: 3vh;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  /* text-align: center; */
+}
+
+.board-container {
+  margin: 0 auto;
+  padding: 5vh 3vw;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  /* align-items: center; */
+  text-align: left;
+}
+
+.board-item-row {
+  margin: 3vh 2vw;
+  padding: 1vh 3vw;
+  flex-basis: 650px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.anchor-container {
+  /* aタグの範囲がflexboxの範囲に拡張されてしまうのを回避 */
+  align-items: flex-start;
+}
+
+a {
+  font-weight: 500;
+  color: #3bb4ff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #424aee;
+}
+
+h1 {
+  text-align: center;
+}
+
+input,
+button {
+  margin: 3vh 5vw;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 1.2vh 1vw;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #0f0f0f;
+  background-color: #ecf2ff;
+  transition: border-color 0.25s;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  width: 50vw;
+}
+
+.over-text {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
+#thingName {
+  background-color: #f1f0e8;
+}
+
+#submit {
+  background-color: #e5d1fa;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #7339d8;
+}
+button:active {
+  border-color: #7339d8;
+  background-color: #e8e8e8;
+}
+
+input,
+button {
+  outline: none;
+}
+
+#greet-input {
+  margin-right: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #d2d687;
+    background-color: #3d2065;
+  }
+
+  .board-item-row {
+    background-color: #a191ad;
+  }
+
+  a {
+    color: #1da6b5;
+  }
+
+  a:hover {
+    color: #396cd8;
+  }
+
+  input,
+  button {
+    color: #e8e8e8;
+    background-color: #7f5f9c;
+  }
+
+  button:hover {
+    border-color: #ffdd77;
+  }
+
+  button:active {
+    border-color: #ffdd77;
+    background-color: #0f0f0f;
+  }
+
+  #thingName {
+    color: #0f0f0f;
+    background-color: #a4a49e;
+  }
+
+  ::placeholder {
+    color: #d5d5d5;
+  }
+
+  #submit {
+    background-color: #5b0888;
+  }
+}
