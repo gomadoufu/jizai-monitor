@@ -1,10 +1,10 @@
 [package]
 name = "jizai-monitor"
-version = "0.0.0"
+version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["gomadoufu"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/gomadoufu/jizai-monitor"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,7 +13,10 @@ edition = "2021"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [ "dialog-save", "fs-write-file", "dialog-confirm",
+tauri = { version = "1.4", features = [
+    "dialog-save",
+    "fs-write-file",
+    "dialog-confirm",
     "window-all",
     "dialog-message",
     "dialog-open",
