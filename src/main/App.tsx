@@ -1,10 +1,12 @@
-import React, { ComponentProps, useState } from 'react';
+import React, { ComponentProps, useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
 import { message } from '@tauri-apps/api/dialog';
 import CertLoadButton from '../components/CertLoadButton';
 import ThingNameForm from '../components/ThingNameForm';
 import { v4 as uuidv4 } from 'uuid';
-import { WebviewWindow } from '@tauri-apps/api/window';
+import { WebviewWindow, appWindow } from '@tauri-apps/api/window';
+import { emit } from '@tauri-apps/api/event';
+import { confirm } from '@tauri-apps/api/dialog';
 
 type FilePath = string;
 
@@ -12,7 +14,7 @@ function App() {
   const [ca, setCa] = useState<FilePath>('');
   const [cert, setCert] = useState<FilePath>('');
   const [key, setKey] = useState<FilePath>('');
-  const [thing, setThingName] = useState<string>('');
+  const [things, setThings] = useState<string>('');
 
   const certificates: ComponentProps<typeof CertLoadButton>[] = [
     {
@@ -35,40 +37,63 @@ function App() {
     },
   ];
 
+  useEffect(() => {
+    const listenClose = async () => {
+      await appWindow.onCloseRequested(async (event) => {
+        const confirmed = await confirm('アプリを終了しますか？');
+        if (!confirmed) {
+          event.preventDefault();
+        }
+        await emit('quit', null);
+      });
+    };
+
+    return () => {
+      listenClose();
+    };
+  }, []);
+
+  async function createMonitor(thing: string) {
+    const uniqueId = uuidv4();
+    const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
+    webview.once('tauri://created', async () => {
+      console.log('webview created');
+      try {
+        // rspc使いたいね。でもasyncいけるかわからんね。
+        await invoke('mqtt_call', {
+          message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
+        });
+        let monitor = await invoke('fetch_monitor', { uuid: uniqueId });
+        await webview.emit('monitor', monitor);
+      } catch (error) {
+        // message('エラーが発生しました。\n' + error, {
+        //   title: 'Error',
+        //   type: 'error',
+        // });
+        return;
+      }
+    });
+    webview.once('tauri://error', () => {
+      message('エラーが発生しました。\n ウィンドウの作成に失敗しました', {
+        title: 'Error',
+        type: 'error',
+      });
+      return;
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!ca || !cert || !key) {
       message('ファイルを選択してください', { title: 'Error', type: 'error' });
       return;
     }
-    if (!thing) {
+    if (!things) {
       message('監視するEdgeの識別番号を入力してください', { title: 'Error', type: 'error' });
       return;
     }
-    const uniqueId = uuidv4();
-    const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
-    webview.once('tauri://created', async () => {
-      console.log('webview created');
-      try {
-        let response = await invoke('submit', {
-          message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
-        });
-        if (typeof response !== 'string') {
-          message('エラーが発生しました', { title: 'Error', type: 'error' });
-          return;
-        }
-        console.log(response);
-        await webview.emit('monitor/sensor', response);
-        console.log('emitted sensor data');
-      } catch (error) {
-        console.error(error);
-        message('エラーが発生しました', { title: 'Error', type: 'error' });
-        return;
-      }
-    });
-    webview.once('tauri://error', () => {
-      message('エラーが発生しました', { title: 'Error', type: 'error' });
-      return;
+    things.split(',').map((s) => {
+      createMonitor(s.trim());
     });
   }
 
@@ -92,9 +117,7 @@ function App() {
 
         <ThingNameForm
           onSubmit={handleSubmit}
-          onThingNameChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setThingName(e.target.value)
-          }
+          onThingNameChange={(e: React.ChangeEvent<HTMLInputElement>) => setThings(e.target.value)}
         />
       </div>
     </div>

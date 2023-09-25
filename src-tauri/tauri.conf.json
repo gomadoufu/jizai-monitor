@@ -19,10 +19,15 @@
       },
       "dialog": {
         "open": true,
-        "message": true
+        "save": true,
+        "message": true,
+        "confirm": true
       },
       "window": {
         "all": true
+      },
+      "fs": {
+        "writeFile": true
       }
     },
     "bundle": {
