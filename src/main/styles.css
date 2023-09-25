@@ -2,7 +2,7 @@
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
-  font-weight: 500;
+  font-weight: bold;
 
   color: #0f0f0f;
   background-color: #e3dffd;
@@ -87,10 +87,12 @@ button {
 }
 
 #thingName {
+  font-weight: bold;
   background-color: #f1f0e8;
 }
 
 #submit {
+  font-weight: bold;
   background-color: #e5d1fa;
 }
 
@@ -109,10 +111,6 @@ button:active {
 input,
 button {
   outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -149,12 +147,13 @@ button {
   }
 
   #thingName {
-    color: #0f0f0f;
+    color: #513636;
     background-color: #a4a49e;
   }
 
   ::placeholder {
     color: #d5d5d5;
+    text-align: center;
   }
 
   #submit {

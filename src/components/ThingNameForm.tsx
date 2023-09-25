@@ -12,7 +12,7 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         id="thingName"
         type="text"
         name="thingName"
-        placeholder="☞ thing nameを入力"
+        placeholder=" ☞   thing nameを入力（複数の場合カンマ区切り）"
         autoComplete="off"
         onChange={onThingNameChange}
       />

@@ -30,7 +30,7 @@ function App() {
       extension: 'crt',
     },
     {
-      name: '秘密鍵',
+      name: 'プライベートキー',
       path: key,
       setPath: setKey,
       extension: 'key',
@@ -40,11 +40,9 @@ function App() {
   useEffect(() => {
     const listenClose = async () => {
       await appWindow.onCloseRequested(async (event) => {
-        const confirmed = await confirm('アプリを終了しますか？');
-        if (!confirmed) {
-          event.preventDefault();
-        }
+        event.preventDefault();
         await emit('quit', null);
+        appWindow.close();
       });
     };
 
@@ -59,7 +57,6 @@ function App() {
     webview.once('tauri://created', async () => {
       console.log('webview created');
       try {
-        // rspc使いたいね。でもasyncいけるかわからんね。
         await invoke('mqtt_call', {
           message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
         });
@@ -89,8 +86,16 @@ function App() {
       message('監視するEdgeの識別番号を入力してください', { title: 'Error', type: 'error' });
       return;
     }
-    things.split(',').map((s) => {
-      const thing = s.replace(/\s+/g, '');
+    const extractValues = (str: string): string[] => {
+      // 余分な空白やカンマを取り除きます。
+      let cleaned = str.replace(/\s+/g, '').replace(/,+/g, ',');
+
+      // カンマで区切られた文字列を配列に変換します。
+      return cleaned.split(',').filter(Boolean);
+    };
+    console.log(things);
+    console.log(extractValues(things));
+    extractValues(things).forEach((thing) => {
       createMonitor(thing);
     });
   }

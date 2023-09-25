@@ -5,9 +5,9 @@ import { ServicesStatus, SensorStatus, RecordStatus, isMonitor } from '../types'
 import { message } from '@tauri-apps/api/dialog';
 
 export function useMonitorData() {
-  const [thing, setThingName] = useState<string>('');
-  const [sub_topic, setSubTopic] = useState<string>('');
-  const [pub_topic, setPubTopic] = useState<string>('');
+  const [thing, setThingName] = useState<string>('Loading...');
+  const [sub_topic, setSubTopic] = useState<string>('Loading...');
+  const [pub_topic, setPubTopic] = useState<string>('Loading...');
   const [services, setServices] = useState<ServicesStatus | null>(null);
   const [sensor, setSensor] = useState<SensorStatus | null>(null);
   const [record, setRecord] = useState<RecordStatus | null>(null);
@@ -23,7 +23,7 @@ export function useMonitorData() {
       try {
         const FailUnlisten = await listen('fail', () => {
           FailUnlisten();
-          setThingName('データの取得に失敗しました');
+          setThingName('データの取得に失敗しました🌀');
           setSubTopic('Failed to get data');
           setPubTopic('Failed to get data');
           setServices(null);
