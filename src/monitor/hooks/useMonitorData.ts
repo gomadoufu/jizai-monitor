@@ -46,7 +46,6 @@ export function useMonitorData() {
           setRecord(event.payload.record);
         });
       } catch (err) {
-        console.error(err);
         message('エラーが発生しました。\n データの表示に失敗😔', { title: 'Error', type: 'error' });
       }
     };

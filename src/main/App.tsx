@@ -6,7 +6,6 @@ import ThingNameForm from '../components/ThingNameForm';
 import { v4 as uuidv4 } from 'uuid';
 import { WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
-import { confirm } from '@tauri-apps/api/dialog';
 
 type FilePath = string;
 
@@ -55,7 +54,6 @@ function App() {
     const uniqueId = uuidv4();
     const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
     webview.once('tauri://created', async () => {
-      console.log('webview created');
       try {
         await invoke('mqtt_call', {
           message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
@@ -93,8 +91,6 @@ function App() {
       // カンマで区切られた文字列を配列に変換します。
       return cleaned.split(',').filter(Boolean);
     };
-    console.log(things);
-    console.log(extractValues(things));
     extractValues(things).forEach((thing) => {
       createMonitor(thing);
     });

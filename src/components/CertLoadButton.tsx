@@ -20,7 +20,6 @@ const CertLoadButton: React.FC<CertificateProps> = ({ name, path, setPath, exten
       await message('ファイルを選択してください', { title: 'Error', type: 'error' });
     }
     if (typeof selected === 'string') {
-      console.log(`Selected file path: ${selected}`);
       setPath(selected);
     }
   }
