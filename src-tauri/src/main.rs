@@ -11,6 +11,7 @@ use tauri::State;
 use tokio::task;
 
 use anyhow::Result;
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitMessage {
@@ -28,7 +29,7 @@ pub struct ResponseMessage {
 }
 
 #[tauri::command]
-async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Result<String, ()> {
+async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Result<(), String> {
     let SubmitMessage {
         uuid,
         thing,
@@ -47,19 +48,14 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
     let publish_topic = "monitor/get/".to_string() + &thing;
     let publish_payload = "{\"mode\": \"machine\"}".to_string();
 
-    let mut monitor = Monitor::new(
-        uuid,
-        thing.clone(),
-        "".to_string(),
-        subscribe_topic.clone(),
-        publish_topic.clone(),
-    );
+    let subscribe_topic_clone = subscribe_topic.clone();
+    let publish_topic_clone = publish_topic.clone();
 
     task::spawn(async move {
-        mqtt::client::subscribe(&client, &subscribe_topic)
+        mqtt::client::subscribe(&client, &subscribe_topic_clone)
             .await
             .expect("subscribe error");
-        mqtt::client::publish(&client, &publish_topic, &publish_payload)
+        mqtt::client::publish(&client, &publish_topic_clone, &publish_payload)
             .await
             .expect("publish error");
     });
@@ -76,20 +72,40 @@ async fn submit(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Res
 
     match received_handle.await {
         Ok(received_data) => {
-            monitor.payload = received_data.sensors.clone();
+            let monitor = Monitor::new(
+                uuid.clone(),
+                thing.clone(),
+                subscribe_topic.clone(),
+                publish_topic.clone(),
+                received_data.services.clone(),
+                received_data.sensors.clone(),
+                received_data.record.clone(),
+            );
 
-            appstate.add_monitor(monitor);
+            appstate.add_monitor(Uuid::parse_str(uuid.as_str()).unwrap(), monitor);
 
-            Ok(received_data.sensors)
+            Ok(())
         }
-        Err(_) => Err(()),
+        Err(_) => Err("MQTT通信に失敗しました".to_string()),
+    }
+}
+
+#[tauri::command]
+async fn fetch_monitor(uuid: String, appstate: State<'_, GlobalState>) -> Result<Monitor, ()> {
+    let monitor = appstate.get_monitor(Uuid::parse_str(uuid.as_str()).unwrap());
+
+    match monitor {
+        Some(monitor) => Ok(monitor),
+        None => {
+            panic!("monitor not found");
+        }
     }
 }
 
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![submit])
+        .invoke_handler(tauri::generate_handler![mqtt_call, fetch_monitor])
         .manage(GlobalState::new())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -19,8 +19,8 @@
   padding-top: 3vh;
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
-  /* text-align: center; */
+  justify-content: center;
+  text-align: center;
 }
 
 .board-container {
@@ -47,6 +47,10 @@
 .anchor-container {
   /* aタグの範囲がflexboxの範囲に拡張されてしまうのを回避 */
   align-items: flex-start;
+}
+
+h3 {
+  text-decoration: underline;
 }
 
 a {

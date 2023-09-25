@@ -1,2 +1,2 @@
 pub mod client;
-mod parse_json;
+pub mod parse_json;

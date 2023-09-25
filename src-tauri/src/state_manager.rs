@@ -1,29 +1,47 @@
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Mutex};
 use uuid::Uuid;
 
-#[derive(Debug, Clone)]
+use crate::mqtt::parse_json;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Monitor {
     pub uuid: Uuid,
     pub thing: String,
     pub sub_topic: String,
     pub pub_topic: String,
-    pub payload: String,
+    pub services: parse_json::ServicesStatus,
+    pub sensors: parse_json::SensorStatus,
+    pub record: parse_json::RecordStatus,
 }
 
 impl Monitor {
     pub fn new(
         uuid: String,
         thing: String,
-        payload: String,
         sub_topic: String,
         pub_topic: String,
+        services: String,
+        sensors: String,
+        record: String,
     ) -> Self {
+        let Ok(services) = parse_json::parse_services(services.as_bytes()) else {
+            panic!("services parse error");
+        };
+        let Ok(sensors) = parse_json::parse_sensors(sensors.as_bytes()) else {
+            panic!("sensors parse error");
+        };
+        let Ok(record) = parse_json::parse_record(record.as_bytes()) else {
+            panic!("record parse error");
+        };
         Self {
             uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
             thing,
-            payload,
             sub_topic,
             pub_topic,
+            services,
+            sensors,
+            record,
         }
     }
 }
@@ -57,15 +75,14 @@ impl GlobalState {
         self.0.lock().unwrap().file_cache.insert(file_name, file);
     }
 
-    // pub fn get_monitors(&self) -> HashMap<Uuid, Monitor> {
-    //     self.0.lock().unwrap().monitors.clone()
-    // }
+    pub fn get_monitor(&self, id: Uuid) -> Option<Monitor> {
+        let state = self.0.lock().unwrap();
+        state.monitors.get(&id).cloned()
+    }
 
-    pub fn add_monitor(&self, monitor: Monitor) -> Uuid {
+    pub fn add_monitor(&self, id: Uuid, monitor: Monitor) {
         let mut state = self.0.lock().unwrap();
-        let id = Uuid::new_v4();
         state.monitors.insert(id, monitor);
-        id
     }
 }
 
