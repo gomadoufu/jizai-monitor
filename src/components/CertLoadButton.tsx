@@ -27,7 +27,7 @@ const CertLoadButton: React.FC<CertificateProps> = ({ name, path, setPath, exten
 
   return (
     <button type="button" onClick={handleClick}>
-      <div className="over-text">{path ? path : `${name}ファイルを選択`}</div>
+      <div className="over-text">{path ? path : `📄${name}ファイルを選択`}</div>
     </button>
   );
 };

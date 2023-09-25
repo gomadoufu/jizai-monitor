@@ -12,12 +12,12 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         id="thingName"
         type="text"
         name="thingName"
-        placeholder="thing name"
+        placeholder="☞ thing nameを入力"
         autoComplete="off"
         onChange={onThingNameChange}
       />
       <button id="submit" type="submit">
-        監視する
+        監視情報を取得する 👀
       </button>
     </form>
   );
