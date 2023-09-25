@@ -66,8 +66,8 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
             .expect("poll error")
     });
 
-    // 1秒まってMQTTが帰ってこなければ、問題があったとみなす
-    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    // 指定の秒数まってMQTTが帰ってこなければ、問題があったとみなす
+    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
     received_handle.abort();
 
     match received_handle.await {

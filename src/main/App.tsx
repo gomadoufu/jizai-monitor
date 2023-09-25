@@ -66,10 +66,7 @@ function App() {
         let monitor = await invoke('fetch_monitor', { uuid: uniqueId });
         await webview.emit('monitor', monitor);
       } catch (error) {
-        // message('エラーが発生しました。\n' + error, {
-        //   title: 'Error',
-        //   type: 'error',
-        // });
+        await webview.emit('fail', null);
         return;
       }
     });
@@ -93,7 +90,8 @@ function App() {
       return;
     }
     things.split(',').map((s) => {
-      createMonitor(s.trim());
+      const thing = s.replace(/\s+/g, '');
+      createMonitor(thing);
     });
   }
 

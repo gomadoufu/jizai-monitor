@@ -95,5 +95,5 @@ function isRecordStatus(value: unknown): value is RecordStatus {
   );
 }
 
-export type { Monitor, ServicesStatus, SensorStatus, RecordStatus };
+export type { Monitor, ServiceStatus, ServicesStatus, SensorStatus, RecordStatus };
 export { isMonitor, isServicesStatus, isSensorStatus, isRecordStatus };
