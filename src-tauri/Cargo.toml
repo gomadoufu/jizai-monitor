@@ -1,5 +1,5 @@
 [package]
-name = "Jizai-Monitor"
+name = "jizai-monitor"
 version = "0.1.0"
 description = "MQTTでのEdge死活監視モニタ"
 authors = ["gomadoufu"]

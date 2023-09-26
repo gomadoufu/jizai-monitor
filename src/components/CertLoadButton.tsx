@@ -1,5 +1,5 @@
 import React from 'react';
-import { open, message } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/api/dialog';
 
 type FilePath = string;
 
