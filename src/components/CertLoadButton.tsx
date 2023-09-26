@@ -16,9 +16,6 @@ const CertLoadButton: React.FC<CertificateProps> = ({ name, path, setPath, exten
       multiple: false,
       filters: [{ name: 'TLS certificates', extensions: [extension] }],
     });
-    if (selected === null) {
-      await message('ファイルを選択してください', { title: 'Error', type: 'error' });
-    }
     if (typeof selected === 'string') {
       setPath(selected);
     }
