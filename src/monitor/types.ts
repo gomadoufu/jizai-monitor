@@ -9,10 +9,10 @@ type Monitor = {
 };
 
 interface ServiceStatus {
-  name: string;
-  active: boolean;
-  pid: number;
-  cgroup?: string[]; // `?` はオプショナルなフィールドを示します。
+  Name: string;
+  Active: boolean;
+  PID: number;
+  CGroup?: string[]; // `?` はオプショナルなフィールドを示します。
 }
 
 type ServicesStatus = ServiceStatus[];
@@ -65,9 +65,9 @@ function isServicesStatus(value: unknown): value is ServicesStatus {
     Array.isArray(servicesStatus) &&
     servicesStatus.every((serviceStatus) => {
       return (
-        typeof serviceStatus.name === 'string' &&
-        typeof serviceStatus.active === 'boolean' &&
-        typeof serviceStatus.pid === 'number'
+        typeof serviceStatus.Name === 'string' &&
+        typeof serviceStatus.Active === 'boolean' &&
+        typeof serviceStatus.PID === 'number'
       );
     })
   );

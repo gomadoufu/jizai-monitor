@@ -4,16 +4,23 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReceivedData {
+    #[serde(rename = "services")]
     pub services: String,
+    #[serde(rename = "sensors")]
     pub sensors: String,
+    #[serde(rename = "latest-record")]
     pub record: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceStatus {
+    #[serde(rename = "Name")]
     pub name: String,
+    #[serde(rename = "Active")]
     pub active: bool,
+    #[serde(rename = "PID")]
     pub pid: u32,
+    #[serde(rename = "CGroup")]
     pub cgroup: Option<Vec<String>>,
 }
 

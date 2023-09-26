@@ -72,6 +72,7 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
 
     match received_handle.await {
         Ok(received_data) => {
+            println!("{:?}", received_data);
             let monitor = Monitor::new(
                 uuid.clone(),
                 thing.clone(),
@@ -81,6 +82,10 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
                 received_data.sensors.clone(),
                 received_data.record.clone(),
             );
+
+            println!("{:?}", received_data.services);
+            println!("{:?}", received_data.sensors);
+            println!("{:?}", received_data.record);
 
             appstate.add_monitor(Uuid::parse_str(uuid.as_str()).unwrap(), monitor);
 
