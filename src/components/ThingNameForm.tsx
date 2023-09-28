@@ -3,9 +3,10 @@ import React from 'react';
 type ThingNameFormProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onThingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  clicked: boolean;
 };
 
-const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChange }) => {
+const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChange, clicked }) => {
   return (
     <form className="form-item-col" onSubmit={onSubmit}>
       <input
@@ -13,11 +14,11 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         type="text"
         name="thingName"
         placeholder=" ☞   thing nameを入力（複数の場合カンマ区切り）"
-        autoComplete="off"
+        autoCapitalize="off"
         onChange={onThingNameChange}
       />
-      <button id="submit" type="submit">
-        監視情報を取得する 👀
+      <button id="submit" type="submit" disabled={clicked}>
+        {clicked ? '監視情報を取得中...💫' : '監視情報を取得する 👀'}
       </button>
     </form>
   );

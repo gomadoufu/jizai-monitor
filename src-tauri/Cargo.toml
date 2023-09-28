@@ -1,7 +1,7 @@
 [package]
-name = "Jizai-Monitor"
-version = "0.1.0"
-description = "MQTTでのEdge死活監視モニタ"
+name = "jizai-monitor"
+version = "0.2.0"
+description = "MQTT通信を使った、Edge死活監視モニタ"
 authors = ["gomadoufu"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/gomadoufu/jizai-monitor"
@@ -34,7 +34,6 @@ uuid = { version = "1.4.1", features = [
     "serde",
 ] }
 anyhow = "1.0.75"
-rspc = { version = "0.1.3", features = ["tauri"] }
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

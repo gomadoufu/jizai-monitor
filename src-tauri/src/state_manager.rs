@@ -10,6 +10,7 @@ pub struct Monitor {
     pub thing: String,
     pub sub_topic: String,
     pub pub_topic: String,
+    pub raw: String,
     pub services: parse_json::ServicesStatus,
     pub sensors: parse_json::SensorStatus,
     pub record: parse_json::RecordStatus,
@@ -21,24 +22,33 @@ impl Monitor {
         thing: String,
         sub_topic: String,
         pub_topic: String,
+        raw: String,
         services: String,
         sensors: String,
         record: String,
     ) -> Self {
-        let Ok(services) = parse_json::parse_services(services.as_bytes()) else {
-            panic!("services parse error");
-        };
-        let Ok(sensors) = parse_json::parse_sensors(sensors.as_bytes()) else {
-            panic!("sensors parse error");
-        };
-        let Ok(record) = parse_json::parse_record(record.as_bytes()) else {
-            panic!("record parse error");
-        };
+        if raw != "parsed" {
+            return Self {
+                uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
+                thing,
+                sub_topic,
+                pub_topic,
+                raw,
+                services: parse_json::ServicesStatus::default(),
+                sensors: parse_json::SensorStatus::default(),
+                record: parse_json::RecordStatus::default(),
+            };
+        }
+        let services = parse_json::parse_services(services.as_bytes());
+        let sensors = parse_json::parse_sensors(sensors.as_bytes());
+        let record = parse_json::parse_record(record.as_bytes());
+
         Self {
             uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
             thing,
             sub_topic,
             pub_topic,
+            raw: "parsed".to_string(),
             services,
             sensors,
             record,
@@ -84,28 +94,4 @@ impl GlobalState {
         let mut state = self.0.lock().unwrap();
         state.monitors.insert(id, monitor);
     }
-}
-
-pub mod commands {
-    // use tauri::State;
-
-    // use super::*;
-
-    // #[tauri::command]
-    // pub fn person_list(person_manager: State<'_, PersonManager>) -> Result<Vec<Person>, String> {
-    //     let person_list = person_manager.person_list();
-    //     Ok(person_list)
-    // }
-
-    // #[tauri::command]
-    // pub fn person_add(person_manager: State<'_, PersonManager>) -> Result<(), String> {
-    //     person_manager.add_new_person();
-    //     Ok(())
-    // }
-
-    // #[tauri::command]
-    // pub fn person_clean(person_manager: State<'_, PersonManager>) -> Result<(), String> {
-    //     person_manager.clean();
-    //     Ok(())
-    // }
 }

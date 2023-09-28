@@ -6,6 +6,7 @@ import ThingNameForm from '../components/ThingNameForm';
 import { v4 as uuidv4 } from 'uuid';
 import { WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
+import CloseTheOthers from '../components/CloseTheOthers';
 
 type FilePath = string;
 
@@ -14,6 +15,8 @@ function App() {
   const [cert, setCert] = useState<FilePath>('');
   const [key, setKey] = useState<FilePath>('');
   const [things, setThings] = useState<string>('');
+
+  const [clicked, setClicked] = useState(false);
 
   const certificates: ComponentProps<typeof CertLoadButton>[] = [
     {
@@ -50,21 +53,8 @@ function App() {
     };
   }, []);
 
-  async function createMonitor(thing: string) {
-    const uniqueId = uuidv4();
+  function createMonitor(uniqueId: string) {
     const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
-    webview.once('tauri://created', async () => {
-      try {
-        await invoke('mqtt_call', {
-          message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
-        });
-        let monitor = await invoke('fetch_monitor', { uuid: uniqueId });
-        await webview.emit('monitor', monitor);
-      } catch (error) {
-        await webview.emit('fail', null);
-        return;
-      }
-    });
     webview.once('tauri://error', () => {
       message('エラーが発生しました。\n ウィンドウの作成に失敗しました', {
         title: 'Error',
@@ -84,6 +74,7 @@ function App() {
       message('監視するEdgeの識別番号を入力してください', { title: 'Error', type: 'error' });
       return;
     }
+    setClicked(true);
     const extractValues = (str: string): string[] => {
       // 余分な空白やカンマを取り除きます。
       let cleaned = str.replace(/\s+/g, '').replace(/,+/g, ',');
@@ -91,9 +82,18 @@ function App() {
       // カンマで区切られた文字列を配列に変換します。
       return cleaned.split(',').filter(Boolean);
     };
-    extractValues(things).forEach((thing) => {
-      createMonitor(thing);
+
+    const thingsArray = Array.from(new Set(extractValues(things)));
+    const uniqueIdArray = thingsArray.map((_) => uuidv4());
+
+    await invoke('mqtt_call', {
+      message: { uuid: uniqueIdArray, things: thingsArray, ca: ca, cert: cert, key: key },
     });
+
+    for (let i = 0; i < uniqueIdArray.length; i++) {
+      createMonitor(uniqueIdArray[i]);
+    }
+    setClicked(false);
   }
 
   return (
@@ -108,17 +108,21 @@ function App() {
       <p>また、右クリックからリロードできます。</p>
 
       <div className="form-container">
-        <form className="form-item-col">
-          {certificates.map((certificate) => (
-            <CertLoadButton key={certificate.name} {...certificate} />
-          ))}
-        </form>
+        {clicked ? null : (
+          <form className="form-item-col">
+            {certificates.map((certificate) => (
+              <CertLoadButton key={certificate.name} {...certificate} />
+            ))}
+          </form>
+        )}
 
         <ThingNameForm
           onSubmit={handleSubmit}
           onThingNameChange={(e: React.ChangeEvent<HTMLInputElement>) => setThings(e.target.value)}
+          clicked={clicked}
         />
       </div>
+      <CloseTheOthers />
     </div>
   );
 }

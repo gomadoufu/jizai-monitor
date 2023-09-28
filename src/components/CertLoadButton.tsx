@@ -1,5 +1,5 @@
 import React from 'react';
-import { open, message } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/api/dialog';
 
 type FilePath = string;
 
@@ -16,9 +16,6 @@ const CertLoadButton: React.FC<CertificateProps> = ({ name, path, setPath, exten
       multiple: false,
       filters: [{ name: 'TLS certificates', extensions: [extension] }],
     });
-    if (selected === null) {
-      await message('ファイルを選択してください', { title: 'Error', type: 'error' });
-    }
     if (typeof selected === 'string') {
       setPath(selected);
     }

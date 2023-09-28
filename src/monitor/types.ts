@@ -3,16 +3,17 @@ type Monitor = {
   thing: string;
   pub_topic: string;
   sub_topic: string;
+  raw: string;
   services: ServiceStatus[];
   sensors: SensorStatus;
   record: RecordStatus;
 };
 
 interface ServiceStatus {
-  name: string;
-  active: boolean;
-  pid: number;
-  cgroup?: string[]; // `?` はオプショナルなフィールドを示します。
+  Name: string;
+  Active: boolean;
+  PID: number;
+  CGroup?: string[]; // `?` はオプショナルなフィールドを示します。
 }
 
 type ServicesStatus = ServiceStatus[];
@@ -53,6 +54,7 @@ function isMonitor(value: unknown): value is Monitor {
     typeof monitor.thing === 'string' &&
     typeof monitor.pub_topic === 'string' &&
     typeof monitor.sub_topic === 'string' &&
+    typeof monitor.raw === 'string' &&
     isServicesStatus(monitor.services) &&
     isSensorStatus(monitor.sensors) &&
     isRecordStatus(monitor.record)
@@ -65,9 +67,9 @@ function isServicesStatus(value: unknown): value is ServicesStatus {
     Array.isArray(servicesStatus) &&
     servicesStatus.every((serviceStatus) => {
       return (
-        typeof serviceStatus.name === 'string' &&
-        typeof serviceStatus.active === 'boolean' &&
-        typeof serviceStatus.pid === 'number'
+        typeof serviceStatus.Name === 'string' &&
+        typeof serviceStatus.Active === 'boolean' &&
+        typeof serviceStatus.PID === 'number'
       );
     })
   );
