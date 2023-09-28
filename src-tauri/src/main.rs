@@ -37,9 +37,6 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
         key,
     } = message;
 
-    println!("{:?}", uuid);
-    println!("{:?}", things);
-
     let cert_paths = vec![ca, cert, key];
 
     let cert_contents = file_reader::read_certificates(&appstate, &cert_paths).unwrap();
@@ -67,12 +64,14 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
         for subscribe_topic in subscribe_topics_clone.iter() {
             mqtt::client::subscribe(&client_clone, subscribe_topic)
                 .await
-                .expect("Subscribeに失敗しました")
+                .expect("Subscribeに失敗しました");
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
         }
         for publish_topic in publish_topics_clone.iter() {
             mqtt::client::publish(&client_clone, publish_topic, &publish_payload)
                 .await
                 .expect("Publishに失敗しました");
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
         }
     });
 
@@ -83,7 +82,7 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
     ) {
         let data = mqtt::client::poll_event(subscribe_topic, &mut eventloop)
             .await
-            .expect("MQTT通信に失敗しました");
+            .unwrap_or_else(|e| e.to_string().into_bytes());
 
         client.unsubscribe(subscribe_topic).await.unwrap();
 
@@ -150,8 +149,6 @@ fn create_monitor<T: Into<String>>(
 #[tauri::command]
 async fn fetch_monitor(uuid: String, appstate: State<'_, GlobalState>) -> Result<Monitor, ()> {
     let monitor = appstate.get_monitor(Uuid::parse_str(uuid.as_str()).unwrap());
-
-    println!("{:?}", monitor);
 
     match monitor {
         Some(monitor) => Ok(monitor),
