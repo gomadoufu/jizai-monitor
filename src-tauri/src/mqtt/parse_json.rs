@@ -2,7 +2,12 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Parsable {
+    Parsed(ReceivedData),
+    Raw(Vec<u8>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ReceivedData {
     #[serde(rename = "services")]
     pub services: String,
@@ -12,7 +17,7 @@ pub struct ReceivedData {
     pub record: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ServiceStatus {
     #[serde(rename = "Name")]
     pub name: String,
@@ -24,10 +29,10 @@ pub struct ServiceStatus {
     pub cgroup: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ServicesStatus(Vec<ServiceStatus>);
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CoreTemp {
     #[serde(rename = "Adapter")]
     pub adapter: String,
@@ -35,7 +40,7 @@ pub struct CoreTemp {
     pub temps: HashMap<String, f64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct WifiTemp {
     #[serde(rename = "Adapter")]
     pub adapter: String,
@@ -43,7 +48,7 @@ pub struct WifiTemp {
     pub temps: HashMap<String, f64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AcpiTemp {
     #[serde(rename = "Adapter")]
     pub adapter: String,
@@ -51,7 +56,7 @@ pub struct AcpiTemp {
     pub temps: HashMap<String, f64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SensorStatus {
     #[serde(rename = "coretemp-isa-0000")]
     pub coretemp: CoreTemp,
@@ -61,15 +66,17 @@ pub struct SensorStatus {
     pub iwlwifi: WifiTemp,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RecordStatus {
     pub time: String,
     pub record: String,
     pub length: String,
 }
 
-pub fn parse_whole(data: &[u8]) -> Result<ReceivedData, serde_json::Error> {
+pub fn parse_whole(data: &[u8]) -> Parsable {
     serde_json::from_slice(data)
+        .map(Parsable::Parsed)
+        .unwrap_or_else(|_| Parsable::Raw(data.to_vec()))
 }
 
 pub fn parse_services(data: &[u8]) -> Result<ServicesStatus, serde_json::Error> {

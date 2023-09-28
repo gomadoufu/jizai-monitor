@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
-import { listen } from '@tauri-apps/api/event';
+import { listen, once } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { ServicesStatus, SensorStatus, RecordStatus, isMonitor } from '../types';
 import { message } from '@tauri-apps/api/dialog';
 
-export function useMonitorData() {
+export function useMonitorData(label: string) {
   const [thing, setThingName] = useState<string>('Loading...');
   const [sub_topic, setSubTopic] = useState<string>('Loading...');
   const [pub_topic, setPubTopic] = useState<string>('Loading...');
+  const [raw, setRaw] = useState<string>('Loading...');
   const [services, setServices] = useState<ServicesStatus | null>(null);
   const [sensor, setSensor] = useState<SensorStatus | null>(null);
   const [record, setRecord] = useState<RecordStatus | null>(null);
 
   useEffect(() => {
     const listenQuit = async () => {
-      await listen('quit', () => {
+      const unlisten = await once('quit', () => {
+        unlisten();
         appWindow.close();
       });
     };
@@ -31,7 +33,7 @@ export function useMonitorData() {
           setRecord(null);
         });
 
-        const monitorUnlisten = await listen('monitor', (event) => {
+        const monitorUnlisten = await listen(label, (event) => {
           if (!isMonitor(event.payload)) {
             message('invalid data', { title: 'Error', type: 'error' });
             return;
@@ -41,6 +43,7 @@ export function useMonitorData() {
           setThingName(event.payload.thing);
           setSubTopic(event.payload.sub_topic);
           setPubTopic(event.payload.pub_topic);
+          setRaw(event.payload.raw);
           setServices(event.payload.services);
           setSensor(event.payload.sensors);
           setRecord(event.payload.record);
@@ -54,5 +57,5 @@ export function useMonitorData() {
     fetchData();
   }, []);
 
-  return { thing, sub_topic, pub_topic, services, sensor, record };
+  return { thing, sub_topic, pub_topic, raw, services, sensor, record };
 }

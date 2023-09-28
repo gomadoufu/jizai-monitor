@@ -3,6 +3,7 @@ type Monitor = {
   thing: string;
   pub_topic: string;
   sub_topic: string;
+  raw: string;
   services: ServiceStatus[];
   sensors: SensorStatus;
   record: RecordStatus;
@@ -53,6 +54,7 @@ function isMonitor(value: unknown): value is Monitor {
     typeof monitor.thing === 'string' &&
     typeof monitor.pub_topic === 'string' &&
     typeof monitor.sub_topic === 'string' &&
+    typeof monitor.raw === 'string' &&
     isServicesStatus(monitor.services) &&
     isSensorStatus(monitor.sensors) &&
     isRecordStatus(monitor.record)
