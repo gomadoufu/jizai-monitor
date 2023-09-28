@@ -4,12 +4,17 @@ use uuid::Uuid;
 
 use crate::mqtt::parse_json;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Topic {
+    pub subscribe: String,
+    pub publish: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Monitor {
     pub uuid: Uuid,
     pub thing: String,
-    pub sub_topic: String,
-    pub pub_topic: String,
+    pub topic: Topic,
     pub raw: String,
     pub services: parse_json::ServicesStatus,
     pub sensors: parse_json::SensorStatus,
@@ -20,8 +25,7 @@ impl Monitor {
     pub fn new(
         uuid: String,
         thing: String,
-        sub_topic: String,
-        pub_topic: String,
+        topic: Topic,
         raw: String,
         services: String,
         sensors: String,
@@ -31,8 +35,7 @@ impl Monitor {
             return Self {
                 uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
                 thing,
-                sub_topic,
-                pub_topic,
+                topic,
                 raw,
                 services: parse_json::ServicesStatus::default(),
                 sensors: parse_json::SensorStatus::default(),
@@ -46,8 +49,7 @@ impl Monitor {
         Self {
             uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
             thing,
-            sub_topic,
-            pub_topic,
+            topic,
             raw: "parsed".to_string(),
             services,
             sensors,

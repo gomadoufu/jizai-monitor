@@ -88,6 +88,7 @@ function App() {
 
     await invoke('mqtt_call', {
       message: { uuid: uniqueIdArray, things: thingsArray, ca: ca, cert: cert, key: key },
+      window: appWindow,
     });
 
     for (let i = 0; i < uniqueIdArray.length; i++) {

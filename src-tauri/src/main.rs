@@ -7,8 +7,8 @@ mod state_manager;
 
 use mqtt::parse_json::Parsable::{Parsed, Raw};
 use serde::{Deserialize, Serialize};
-use state_manager::{GlobalState, Monitor};
-use tauri::State;
+use state_manager::{GlobalState, Monitor, Topic};
+use tauri::{Manager, State};
 
 use uuid::Uuid;
 
@@ -28,7 +28,11 @@ pub struct ResponseMessage {
 }
 
 #[tauri::command]
-async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Result<(), String> {
+async fn mqtt_call(
+    message: SubmitMessage,
+    app: tauri::AppHandle,
+    appstate: State<'_, GlobalState>,
+) -> Result<(), String> {
     let SubmitMessage {
         uuid,
         things,
@@ -43,8 +47,6 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
 
     let (client, mut eventloop) = mqtt::client::init(uuid[0].clone(), &cert_contents);
 
-    // let subscribe_topic = "status/monitor/".to_string() + &thing;
-    // let publish_topic = "monitor/get/".to_string() + &thing;
     let publish_payload = "{\"mode\": \"machine\"}".to_string();
 
     let subscribe_topics = things
@@ -63,33 +65,33 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
             .iter()
             .zip(subscribe_topics.iter().zip(publish_topics.iter())),
     ) {
-        mqtt::client::subscribe(&client_clone, subscribe_topic)
+        let _ = app.emit_all("busy", thing);
+
+        let topic = Topic {
+            subscribe: subscribe_topic.clone(),
+            publish: publish_topic.clone(),
+        };
+
+        mqtt::client::subscribe(&client_clone, &topic.subscribe)
             .await
             .map_err(|e| e.to_string())?;
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-        mqtt::client::publish(&client_clone, publish_topic, &publish_payload)
+        mqtt::client::publish(&client_clone, &topic.publish, &publish_payload)
             .await
             .map_err(|e| e.to_string())?;
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-        let data = mqtt::client::poll_event(subscribe_topic, &mut eventloop)
+        let data = mqtt::client::poll_event(&topic.subscribe, &mut eventloop)
             .await
             .unwrap_or_else(|e| e.to_string().into_bytes());
 
         client
-            .unsubscribe(subscribe_topic)
+            .unsubscribe(topic.subscribe.clone())
             .await
             .map_err(|e| e.to_string())?;
 
-        create_monitor(
-            uuid,
-            thing,
-            subscribe_topic,
-            publish_topic,
-            &data,
-            appstate.clone(),
-        )?
+        create_monitor(uuid, thing, topic, &data, appstate.clone())?
     }
 
     Ok(())
@@ -98,8 +100,7 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
 fn create_monitor<T: Into<String>>(
     uuid: &str,
     thing: T,
-    subscribe_topic: T,
-    publish_topic: T,
+    topic: Topic,
     data: &[u8],
     appstate: State<'_, GlobalState>,
 ) -> Result<(), String> {
@@ -110,8 +111,7 @@ fn create_monitor<T: Into<String>>(
             let monitor = Monitor::new(
                 uuid.into(),
                 thing.into(),
-                subscribe_topic.into(),
-                publish_topic.into(),
+                topic,
                 "parsed".to_string(),
                 payload.services.clone(),
                 payload.sensors.clone(),
@@ -127,8 +127,7 @@ fn create_monitor<T: Into<String>>(
             let monitor = Monitor::new(
                 uuid.into(),
                 thing.into(),
-                subscribe_topic.into(),
-                publish_topic.into(),
+                topic,
                 raw,
                 "raw".to_string(),
                 "raw".to_string(),

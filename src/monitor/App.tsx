@@ -7,7 +7,6 @@ import Record from '../components/Record';
 import { useMonitorData } from './hooks/useMonitorData';
 import { useEffect, useState } from 'react';
 import ErrorMessage from '../components/ErrorMessage';
-import { listen } from '@tauri-apps/api/event';
 
 function App() {
   const [now, setNow] = useState(new Date());
