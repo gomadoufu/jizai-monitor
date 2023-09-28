@@ -1,4 +1,5 @@
-import React from 'react';
+import { listen } from '@tauri-apps/api/event';
+import React, { useEffect, useState } from 'react';
 
 type ThingNameFormProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -7,6 +8,18 @@ type ThingNameFormProps = {
 };
 
 const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChange, clicked }) => {
+  const [thing, setThing] = useState<string>('');
+
+  useEffect(() => {
+    const listenBusy = async () => {
+      await listen('busy', (e) => {
+        if (typeof e.payload !== 'string') return;
+        setThing(e.payload);
+      });
+    };
+    listenBusy();
+  }, []);
+
   return (
     <form className="form-item-col" onSubmit={onSubmit}>
       <input
@@ -18,7 +31,7 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         onChange={onThingNameChange}
       />
       <button id="submit" type="submit" disabled={clicked}>
-        {clicked ? '監視情報を取得中...💫' : '監視情報を取得する 👀'}
+        {clicked ? `${thing}と通信中...💫` : '監視情報を取得する 👀'}
       </button>
     </form>
   );
