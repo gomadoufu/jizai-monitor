@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Parsable {
     Parsed(ReceivedData),
     Raw(Vec<u8>),
@@ -79,14 +80,14 @@ pub fn parse_whole(data: &[u8]) -> Parsable {
         .unwrap_or_else(|_| Parsable::Raw(data.to_vec()))
 }
 
-pub fn parse_services(data: &[u8]) -> Result<ServicesStatus, serde_json::Error> {
-    serde_json::from_slice(data)
+pub fn parse_services(data: &[u8]) -> ServicesStatus {
+    serde_json::from_slice(data).unwrap_or_else(|_| ServicesStatus::default())
 }
 
-pub fn parse_sensors(data: &[u8]) -> Result<SensorStatus, serde_json::Error> {
-    serde_json::from_slice(data)
+pub fn parse_sensors(data: &[u8]) -> SensorStatus {
+    serde_json::from_slice(data).unwrap_or_else(|_| SensorStatus::default())
 }
 
-pub fn parse_record(data: &[u8]) -> Result<RecordStatus, serde_json::Error> {
-    serde_json::from_slice(data)
+pub fn parse_record(data: &[u8]) -> RecordStatus {
+    serde_json::from_slice(data).unwrap_or_else(|_| RecordStatus::default())
 }

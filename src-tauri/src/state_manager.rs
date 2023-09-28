@@ -39,15 +39,10 @@ impl Monitor {
                 record: parse_json::RecordStatus::default(),
             };
         }
-        let Ok(services) = parse_json::parse_services(services.as_bytes()) else {
-            panic!("services parse error");
-        };
-        let Ok(sensors) = parse_json::parse_sensors(sensors.as_bytes()) else {
-            panic!("sensors parse error");
-        };
-        let Ok(record) = parse_json::parse_record(record.as_bytes()) else {
-            panic!("record parse error");
-        };
+        let services = parse_json::parse_services(services.as_bytes());
+        let sensors = parse_json::parse_sensors(sensors.as_bytes());
+        let record = parse_json::parse_record(record.as_bytes());
+
         Self {
             uuid: Uuid::parse_str(uuid.as_str()).unwrap(),
             thing,

@@ -10,13 +10,12 @@ use serde::{Deserialize, Serialize};
 use state_manager::{GlobalState, Monitor};
 use tauri::State;
 
-use anyhow::Result;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubmitMessage {
-    pub uuid: String,
-    pub thing: String,
+    pub uuid: Vec<String>,
+    pub things: Vec<String>,
     pub ca: String,
     pub cert: String,
     pub key: String,
@@ -32,82 +31,116 @@ pub struct ResponseMessage {
 async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> Result<(), String> {
     let SubmitMessage {
         uuid,
-        thing,
+        things,
         ca,
         cert,
         key,
     } = message;
 
+    println!("{:?}", uuid);
+    println!("{:?}", things);
+
     let cert_paths = vec![ca, cert, key];
 
     let cert_contents = file_reader::read_certificates(&appstate, &cert_paths).unwrap();
 
-    let (client, eventloop) = mqtt::client::init(uuid.clone(), &cert_contents);
+    let (client, mut eventloop) = mqtt::client::init(uuid[0].clone(), &cert_contents);
 
-    let subscribe_topic = "status/monitor/".to_string() + &thing;
-    let publish_topic = "monitor/get/".to_string() + &thing;
+    // let subscribe_topic = "status/monitor/".to_string() + &thing;
+    // let publish_topic = "monitor/get/".to_string() + &thing;
     let publish_payload = "{\"mode\": \"machine\"}".to_string();
 
-    let subscribe_topic_clone = subscribe_topic.clone();
-    let publish_topic_clone = publish_topic.clone();
+    let subscribe_topics = things
+        .iter()
+        .map(|thing| "status/monitor/".to_string() + thing)
+        .collect::<Vec<String>>();
+    let publish_topics = things
+        .iter()
+        .map(|thing| "monitor/get/".to_string() + thing)
+        .collect::<Vec<String>>();
 
-    mqtt::client::subscribe(&client, &subscribe_topic_clone)
-        .await
-        .map_err(|_| "subscribe error".to_string())?;
-    mqtt::client::publish(&client, &publish_topic_clone, &publish_payload)
-        .await
-        .map_err(|_| "publish error".to_string())?;
+    let client_clone = client.clone();
+    let subscribe_topics_clone = subscribe_topics.clone();
+    let publish_topics_clone = publish_topics.clone();
 
-    let received_handle = tokio::spawn(async {
-        mqtt::client::poll_event(eventloop)
-            .await
-            .expect("poll error")
+    tokio::spawn(async move {
+        for subscribe_topic in subscribe_topics_clone.iter() {
+            mqtt::client::subscribe(&client_clone, subscribe_topic)
+                .await
+                .expect("Subscribeに失敗しました")
+        }
+        for publish_topic in publish_topics_clone.iter() {
+            mqtt::client::publish(&client_clone, publish_topic, &publish_payload)
+                .await
+                .expect("Publishに失敗しました");
+        }
     });
 
-    // 指定の秒数まってMQTTが帰ってこなければ、問題があったとみなす
-    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
-    received_handle.abort();
+    for (uuid, (thing, (subscribe_topic, publish_topic))) in uuid.iter().zip(
+        things
+            .iter()
+            .zip(subscribe_topics.iter().zip(publish_topics.iter())),
+    ) {
+        let data = mqtt::client::poll_event(subscribe_topic, &mut eventloop)
+            .await
+            .expect("MQTT通信に失敗しました");
 
-    let data = match received_handle.await {
-        Ok(data) => data,
-        Err(_) => {
-            return Err("MQTT通信に失敗しました".to_string());
-        }
-    };
+        client.unsubscribe(subscribe_topic).await.unwrap();
 
-    let received_data = mqtt::parse_json::parse_whole(data.as_ref());
+        create_monitor(
+            uuid,
+            thing,
+            subscribe_topic,
+            publish_topic,
+            &data,
+            appstate.clone(),
+        )?
+    }
+
+    Ok(())
+}
+
+fn create_monitor<T: Into<String>>(
+    uuid: &str,
+    thing: T,
+    subscribe_topic: T,
+    publish_topic: T,
+    data: &[u8],
+    appstate: State<'_, GlobalState>,
+) -> Result<(), String> {
+    let received_data = mqtt::parse_json::parse_whole(data);
 
     match received_data {
         Parsed(payload) => {
             let monitor = Monitor::new(
-                uuid.clone(),
-                thing.clone(),
-                subscribe_topic.clone(),
-                publish_topic.clone(),
+                uuid.into(),
+                thing.into(),
+                subscribe_topic.into(),
+                publish_topic.into(),
                 "parsed".to_string(),
                 payload.services.clone(),
                 payload.sensors.clone(),
                 payload.record.clone(),
             );
 
-            appstate.add_monitor(Uuid::parse_str(uuid.as_str()).unwrap(), monitor);
+            appstate.add_monitor(Uuid::parse_str(uuid).unwrap(), monitor);
 
             Ok(())
         }
         Raw(payload) => {
             let raw = String::from_utf8(payload).or(Err("MQTTペイロードがUTF-8ではありません"))?;
             let monitor = Monitor::new(
-                uuid.clone(),
-                thing.clone(),
-                subscribe_topic.clone(),
-                publish_topic.clone(),
+                uuid.into(),
+                thing.into(),
+                subscribe_topic.into(),
+                publish_topic.into(),
                 raw,
                 "raw".to_string(),
                 "raw".to_string(),
                 "raw".to_string(),
             );
 
-            appstate.add_monitor(Uuid::parse_str(uuid.as_str()).unwrap(), monitor);
+            appstate.add_monitor(Uuid::parse_str(uuid).unwrap(), monitor);
 
             Ok(())
         }
@@ -117,6 +150,8 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
 #[tauri::command]
 async fn fetch_monitor(uuid: String, appstate: State<'_, GlobalState>) -> Result<Monitor, ()> {
     let monitor = appstate.get_monitor(Uuid::parse_str(uuid.as_str()).unwrap());
+
+    println!("{:?}", monitor);
 
     match monitor {
         Some(monitor) => Ok(monitor),

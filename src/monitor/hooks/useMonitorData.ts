@@ -3,6 +3,7 @@ import { listen, once } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { ServicesStatus, SensorStatus, RecordStatus, isMonitor } from '../types';
 import { message } from '@tauri-apps/api/dialog';
+import { invoke } from '@tauri-apps/api';
 
 export function useMonitorData(uuid: string) {
   const [thing, setThingName] = useState<string>('Loading...');
@@ -34,21 +35,19 @@ export function useMonitorData(uuid: string) {
           setRecord(null);
         });
 
-        const monitorUnlisten = await listen(uuid, (event) => {
-          if (!isMonitor(event.payload)) {
-            message('invalid data', { title: 'Error', type: 'error' });
-            return;
-          }
+        let monitor = await invoke('fetch_monitor', { uuid });
+        if (!isMonitor(monitor)) {
+          message('invalid data', { title: 'Error', type: 'error' });
+          return;
+        }
 
-          monitorUnlisten();
-          setThingName(event.payload.thing);
-          setSubTopic(event.payload.sub_topic);
-          setPubTopic(event.payload.pub_topic);
-          setRaw(event.payload.raw);
-          setServices(event.payload.services);
-          setSensor(event.payload.sensors);
-          setRecord(event.payload.record);
-        });
+        setThingName(monitor.thing);
+        setSubTopic(monitor.sub_topic);
+        setPubTopic(monitor.pub_topic);
+        setRaw(monitor.raw);
+        setServices(monitor.services);
+        setSensor(monitor.sensors);
+        setRecord(monitor.record);
       } catch (err) {
         message('エラーが発生しました。\n データの表示に失敗😔', { title: 'Error', type: 'error' });
       }

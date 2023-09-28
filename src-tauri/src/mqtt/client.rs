@@ -22,7 +22,7 @@ pub fn init(uuid: String, cert_contents: &[Vec<u8>]) -> (AsyncClient, EventLoop)
     mqttoptions.set_transport(transport);
     mqttoptions.set_max_packet_size(std::u16::MAX as usize, std::u16::MAX as usize);
 
-    AsyncClient::new(mqttoptions, 10)
+    AsyncClient::new(mqttoptions, 30)
 }
 
 pub async fn subscribe(client: &AsyncClient, topic: &str) -> Result<(), rumqttc::ClientError> {
@@ -37,9 +37,13 @@ pub async fn publish(
     client.publish(topic, QoS::AtMostOnce, false, payload).await
 }
 
-pub async fn poll_event(mut eventloop: EventLoop) -> Result<Vec<u8>, Box<dyn Error>> {
+pub async fn poll_event(topic: &str, eventloop: &mut EventLoop) -> Result<Vec<u8>, Box<dyn Error>> {
     while let Ok(event) = eventloop.poll().await {
+        println!("{:?}", event);
         if let rumqttc::Event::Incoming(rumqttc::Incoming::Publish(packet)) = event {
+            if packet.topic != topic {
+                continue;
+            }
             return Ok(packet.payload.to_vec());
         }
     }
