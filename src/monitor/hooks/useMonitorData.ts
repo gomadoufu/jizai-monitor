@@ -4,7 +4,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { ServicesStatus, SensorStatus, RecordStatus, isMonitor } from '../types';
 import { message } from '@tauri-apps/api/dialog';
 
-export function useMonitorData(label: string) {
+export function useMonitorData(uuid: string) {
   const [thing, setThingName] = useState<string>('Loading...');
   const [sub_topic, setSubTopic] = useState<string>('Loading...');
   const [pub_topic, setPubTopic] = useState<string>('Loading...');
@@ -28,12 +28,13 @@ export function useMonitorData(label: string) {
           setThingName('データの取得に失敗しました🌀');
           setSubTopic('Failed to get data');
           setPubTopic('Failed to get data');
+          setRaw('Failed to get data');
           setServices(null);
           setSensor(null);
           setRecord(null);
         });
 
-        const monitorUnlisten = await listen(label, (event) => {
+        const monitorUnlisten = await listen(uuid, (event) => {
           if (!isMonitor(event.payload)) {
             message('invalid data', { title: 'Error', type: 'error' });
             return;

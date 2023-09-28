@@ -59,7 +59,7 @@ function App() {
           message: { uuid: uniqueId, thing: thing, ca: ca, cert: cert, key: key },
         });
         let monitor = await invoke('fetch_monitor', { uuid: uniqueId });
-        await webview.emit('monitor', monitor);
+        await webview.emit(uniqueId, monitor);
       } catch (error) {
         await webview.emit('fail', null);
         return;

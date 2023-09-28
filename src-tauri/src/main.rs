@@ -107,8 +107,6 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
                 "raw".to_string(),
             );
 
-            println!("monitor {:#?}", monitor);
-
             appstate.add_monitor(Uuid::parse_str(uuid.as_str()).unwrap(), monitor);
 
             Ok(())
