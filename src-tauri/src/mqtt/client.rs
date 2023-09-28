@@ -39,7 +39,6 @@ pub async fn publish(
 
 pub async fn poll_event(topic: &str, eventloop: &mut EventLoop) -> Result<Vec<u8>, Box<dyn Error>> {
     while let Ok(event) = eventloop.poll().await {
-        println!("{:?}", event);
         if let rumqttc::Event::Incoming(rumqttc::Incoming::Publish(packet)) = event {
             if packet.topic != topic {
                 continue;

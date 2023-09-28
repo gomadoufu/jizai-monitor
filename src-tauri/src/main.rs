@@ -57,29 +57,22 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
         .collect::<Vec<String>>();
 
     let client_clone = client.clone();
-    let subscribe_topics_clone = subscribe_topics.clone();
-    let publish_topics_clone = publish_topics.clone();
-
-    tokio::spawn(async move {
-        for subscribe_topic in subscribe_topics_clone.iter() {
-            mqtt::client::subscribe(&client_clone, subscribe_topic)
-                .await
-                .expect("Subscribeに失敗しました");
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        }
-        for publish_topic in publish_topics_clone.iter() {
-            mqtt::client::publish(&client_clone, publish_topic, &publish_payload)
-                .await
-                .expect("Publishに失敗しました");
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        }
-    });
 
     for (uuid, (thing, (subscribe_topic, publish_topic))) in uuid.iter().zip(
         things
             .iter()
             .zip(subscribe_topics.iter().zip(publish_topics.iter())),
     ) {
+        mqtt::client::subscribe(&client_clone, subscribe_topic)
+            .await
+            .map_err(|e| e.to_string())?;
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+        mqtt::client::publish(&client_clone, publish_topic, &publish_payload)
+            .await
+            .map_err(|e| e.to_string())?;
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
         let data = mqtt::client::poll_event(subscribe_topic, &mut eventloop)
             .await
             .unwrap_or_else(|e| e.to_string().into_bytes());
@@ -88,8 +81,6 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
             .unsubscribe(subscribe_topic)
             .await
             .map_err(|e| e.to_string())?;
-
-        println!("{:?}", data);
 
         create_monitor(
             uuid,
