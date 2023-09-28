@@ -1,7 +1,7 @@
 [package]
 name = "jizai-monitor"
-version = "0.1.0"
-description = "MQTTでのEdge死活監視モニタ"
+version = "0.2.0"
+description = "MQTT通信を使った、Edge死活監視モニタ"
 authors = ["gomadoufu"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/gomadoufu/jizai-monitor"
