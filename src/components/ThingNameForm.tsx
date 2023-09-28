@@ -17,7 +17,7 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         autoCapitalize="off"
         onChange={onThingNameChange}
       />
-      <button id="submit" type="submit">
+      <button id="submit" type="submit" disabled={clicked}>
         {clicked ? '監視情報を取得中...💫' : '監視情報を取得する 👀'}
       </button>
     </form>

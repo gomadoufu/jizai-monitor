@@ -39,13 +39,14 @@ pub async fn publish(
 
 pub async fn poll_event(topic: &str, eventloop: &mut EventLoop) -> Result<Vec<u8>, Box<dyn Error>> {
     while let Ok(event) = eventloop.poll().await {
+        println!("{:?}", event);
         if let rumqttc::Event::Incoming(rumqttc::Incoming::Publish(packet)) = event {
             if packet.topic != topic {
                 continue;
             }
             return Ok(packet.payload.to_vec());
         }
-        if let rumqttc::Event::Incoming(rumqttc::Incoming::PingResp) = event {
+        if let rumqttc::Event::Outgoing(rumqttc::Outgoing::PingReq) = event {
             return Err("MQTT通信に失敗しました".into());
         }
     }

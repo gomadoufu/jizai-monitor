@@ -2,7 +2,7 @@
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
-  font-weight: 500;
+  font-weight: normal;
 
   color: #0f0f0f;
   background-color: #e3dffd;
@@ -46,30 +46,14 @@
   background-color: #fff4d2;
 }
 
-.anchor-container {
-  /* aタグの範囲がflexboxの範囲に拡張されてしまうのを回避 */
-  align-items: flex-start;
-}
-
 h3 {
   text-decoration: underline;
-}
-
-a {
-  font-weight: 500;
-  color: #3bb4ff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #424aee;
 }
 
 h1 {
   text-align: center;
 }
 
-input,
 button {
   margin: 3vh 5vw;
   border-radius: 8px;
@@ -92,14 +76,6 @@ button {
   text-overflow: ellipsis;
 }
 
-#thingName {
-  background-color: #f1f0e8;
-}
-
-#submit {
-  background-color: #e5d1fa;
-}
-
 button {
   cursor: pointer;
 }
@@ -112,13 +88,8 @@ button:active {
   background-color: #e8e8e8;
 }
 
-input,
 button {
   outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -131,15 +102,6 @@ button {
     background-color: #a191ad;
   }
 
-  a {
-    color: #1da6b5;
-  }
-
-  a:hover {
-    color: #396cd8;
-  }
-
-  input,
   button {
     color: #e8e8e8;
     background-color: #7f5f9c;
@@ -152,18 +114,5 @@ button {
   button:active {
     border-color: #ffdd77;
     background-color: #0f0f0f;
-  }
-
-  #thingName {
-    color: #0f0f0f;
-    background-color: #a4a49e;
-  }
-
-  ::placeholder {
-    color: #d5d5d5;
-  }
-
-  #submit {
-    background-color: #5b0888;
   }
 }

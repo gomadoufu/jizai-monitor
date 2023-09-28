@@ -108,6 +108,11 @@ button:active {
   background-color: #e8e8e8;
 }
 
+#submit:disabled {
+  cursor: not-allowed;
+  background-color: #fcdfa5;
+}
+
 input,
 button {
   outline: none;
@@ -144,6 +149,11 @@ button {
   button:active {
     border-color: #ffdd77;
     background-color: #0f0f0f;
+  }
+
+  #submit:disabled {
+    cursor: not-allowed;
+    background-color: #a88a20;
   }
 
   #thingName {

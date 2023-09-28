@@ -6,6 +6,7 @@ import ThingNameForm from '../components/ThingNameForm';
 import { v4 as uuidv4 } from 'uuid';
 import { WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
+import CloseTheOthers from '../components/CloseTheOthers';
 
 type FilePath = string;
 
@@ -121,6 +122,7 @@ function App() {
           clicked={clicked}
         />
       </div>
+      <CloseTheOthers />
     </div>
   );
 }

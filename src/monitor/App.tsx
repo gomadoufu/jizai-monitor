@@ -6,6 +6,8 @@ import Sensor from '../components/Sensor';
 import Record from '../components/Record';
 import { useMonitorData } from './hooks/useMonitorData';
 import { useEffect, useState } from 'react';
+import ErrorMessage from '../components/ErrorMessage';
+import { listen } from '@tauri-apps/api/event';
 
 function App() {
   const [now, setNow] = useState(new Date());
@@ -75,7 +77,7 @@ function App() {
         <>
           <div className="board-container">
             <div className="board-item-row">
-              <strong>{raw}</strong>
+              <strong>{raw === 'MQTT通信に失敗しました' ? <ErrorMessage /> : raw}</strong>
             </div>
           </div>
         </>
