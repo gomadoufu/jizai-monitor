@@ -3,9 +3,10 @@ import React from 'react';
 type ThingNameFormProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onThingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  clicked: boolean;
 };
 
-const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChange }) => {
+const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChange, clicked }) => {
   return (
     <form className="form-item-col" onSubmit={onSubmit}>
       <input
@@ -17,7 +18,7 @@ const ThingNameForm: React.FC<ThingNameFormProps> = ({ onSubmit, onThingNameChan
         onChange={onThingNameChange}
       />
       <button id="submit" type="submit">
-        監視情報を取得する 👀
+        {clicked ? '監視情報を取得中...💫' : '監視情報を取得する 👀'}
       </button>
     </form>
   );

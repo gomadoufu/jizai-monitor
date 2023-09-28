@@ -84,7 +84,10 @@ async fn mqtt_call(message: SubmitMessage, appstate: State<'_, GlobalState>) -> 
             .await
             .unwrap_or_else(|e| e.to_string().into_bytes());
 
-        client.unsubscribe(subscribe_topic).await.unwrap();
+        client
+            .unsubscribe(subscribe_topic)
+            .await
+            .expect("Unsubscribeに失敗しました");
 
         create_monitor(
             uuid,
