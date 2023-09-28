@@ -50,7 +50,7 @@ function App() {
     };
   }, []);
 
-  async function createMonitor(uniqueId: string) {
+  function createMonitor(uniqueId: string) {
     const webview = new WebviewWindow(uniqueId, { url: '/monitor.html' });
     webview.once('tauri://error', () => {
       message('エラーが発生しました。\n ウィンドウの作成に失敗しました', {
@@ -79,7 +79,7 @@ function App() {
       return cleaned.split(',').filter(Boolean);
     };
 
-    const thingsArray = extractValues(things);
+    const thingsArray = Array.from(new Set(extractValues(things)));
     const uniqueIdArray = thingsArray.map((_) => uuidv4());
 
     await invoke('mqtt_call', {
@@ -87,7 +87,7 @@ function App() {
     });
 
     for (let i = 0; i < uniqueIdArray.length; i++) {
-      await createMonitor(uniqueIdArray[i]);
+      createMonitor(uniqueIdArray[i]);
     }
   }
 
