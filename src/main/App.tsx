@@ -86,7 +86,7 @@ function App() {
     const thingsArray = Array.from(new Set(extractValues(things)));
     const uniqueIdArray = thingsArray.map((_) => uuidv4());
 
-    await invoke('mqtt_call', {
+    await invoke('call_mqtt', {
       message: { uuid: uniqueIdArray, things: thingsArray, ca: ca, cert: cert, key: key },
       window: appWindow,
     });
@@ -123,7 +123,7 @@ function App() {
           clicked={clicked}
         />
       </div>
-      <CloseTheOthers />
+      <CloseTheOthers disabled={clicked} />
     </div>
   );
 }
