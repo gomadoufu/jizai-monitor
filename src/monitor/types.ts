@@ -1,12 +1,16 @@
 type Monitor = {
   uuid: string;
   thing: string;
-  pub_topic: string;
-  sub_topic: string;
+  topic: Topic;
   raw: string;
   services: ServiceStatus[];
   sensors: SensorStatus;
   record: RecordStatus;
+};
+
+type Topic = {
+  publish: string;
+  subscribe: string;
 };
 
 interface ServiceStatus {
@@ -52,12 +56,21 @@ function isMonitor(value: unknown): value is Monitor {
     monitor !== null &&
     typeof monitor.uuid === 'string' &&
     typeof monitor.thing === 'string' &&
-    typeof monitor.pub_topic === 'string' &&
-    typeof monitor.sub_topic === 'string' &&
+    isTopic(monitor.topic) &&
     typeof monitor.raw === 'string' &&
     isServicesStatus(monitor.services) &&
     isSensorStatus(monitor.sensors) &&
     isRecordStatus(monitor.record)
+  );
+}
+
+function isTopic(value: unknown): value is Topic {
+  const topic = value as Topic;
+  return (
+    typeof topic === 'object' &&
+    topic !== null &&
+    typeof topic.publish === 'string' &&
+    typeof topic.subscribe === 'string'
   );
 }
 

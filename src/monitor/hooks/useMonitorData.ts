@@ -42,8 +42,8 @@ export function useMonitorData(uuid: string) {
         }
 
         setThingName(monitor.thing);
-        setSubTopic(monitor.sub_topic);
-        setPubTopic(monitor.pub_topic);
+        setSubTopic(monitor.topic.subscribe);
+        setPubTopic(monitor.topic.publish);
         setRaw(monitor.raw);
         setServices(monitor.services);
         setSensor(monitor.sensors);

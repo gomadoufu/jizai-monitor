@@ -28,7 +28,7 @@ pub struct ResponseMessage {
 }
 
 #[tauri::command]
-async fn mqtt_call(
+async fn call_mqtt(
     message: SubmitMessage,
     app: tauri::AppHandle,
     appstate: State<'_, GlobalState>,
@@ -156,7 +156,7 @@ async fn fetch_monitor(uuid: String, appstate: State<'_, GlobalState>) -> Result
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![mqtt_call, fetch_monitor])
+        .invoke_handler(tauri::generate_handler![call_mqtt, fetch_monitor])
         .manage(GlobalState::new())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
