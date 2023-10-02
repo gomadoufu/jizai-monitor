@@ -152,6 +152,10 @@ button {
     background-color: #0f0f0f;
   }
 
+  button:disabled {
+    cursor: not-allowed;
+  }
+
   #submit:disabled {
     cursor: not-allowed;
     background-color: #a88a20;
